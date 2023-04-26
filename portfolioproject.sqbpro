@@ -1,197 +1,391 @@
-<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="C:/Users/parth/Desktop/bicycle data/portfolioproject/portfolioproject.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="125"/><column_width id="3" width="10845"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><current_table name="4,21:mainsumvaccinationeachday"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="coviddeaths_csv" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort><column index="3" mode="0"/></sort><column_widths><column index="1" value="87"/><column index="2" value="92"/><column index="3" value="95"/><column index="4" value="93"/><column index="5" value="103"/><column index="6" value="108"/><column index="7" value="104"/><column index="8" value="201"/><column index="9" value="119"/><column index="10" value="115"/><column index="11" value="212"/><column index="12" value="216"/><column index="13" value="212"/><column index="14" value="300"/><column index="15" value="227"/><column index="16" value="223"/><column index="17" value="300"/><column index="18" value="166"/><column index="19" value="116"/><column index="20" value="224"/><column index="21" value="133"/><column index="22" value="241"/><column index="23" value="213"/><column index="24" value="300"/><column index="25" value="230"/><column index="26" value="300"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="covidvaccinations_csv" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="87"/><column index="2" value="92"/><column index="3" value="95"/><column index="4" value="93"/><column index="5" value="103"/><column index="6" value="99"/><column index="7" value="234"/><column index="8" value="230"/><column index="9" value="196"/><column index="10" value="300"/><column index="11" value="123"/><column index="12" value="140"/><column index="14" value="168"/><column index="15" value="171"/><column index="16" value="220"/><column index="17" value="136"/><column index="18" value="164"/><column index="19" value="261"/><column index="20" value="290"/><column index="21" value="293"/><column index="22" value="300"/><column index="23" value="258"/><column index="24" value="300"/><column index="25" value="300"/><column index="26" value="300"/><column index="27" value="158"/><column index="28" value="177"/><column index="29" value="115"/><column index="30" value="140"/><column index="31" value="140"/><column index="32" value="145"/><column index="33" value="157"/><column index="34" value="206"/><column index="35" value="187"/><column index="36" value="151"/><column index="37" value="134"/><column index="38" value="208"/><column index="39" value="262"/><column index="40" value="145"/><column index="41" value="250"/><column index="42" value="103"/><column index="43" value="300"/><column index="44" value="261"/><column index="45" value="156"/><column index="46" value="300"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="populationvaccinatedpercent" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="92"/><column index="2" value="95"/><column index="3" value="91"/><column index="4" value="103"/><column index="5" value="164"/><column index="6" value="209"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="sumvaccinationeachday" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="92"/><column index="2" value="79"/><column index="3" value="75"/><column index="4" value="103"/><column index="5" value="164"/><column index="6" value="200"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1">SELECT location,date,total_cases,new_cases,total_deaths,population
-FROM coviddeaths_csv
-WHERE continent is not NULL
-order by 1,2;
-
--- Total cases vs total deaths
-SELECT location,date,total_cases,total_deaths,(total_deathsf/total_casesf)*100 AS deathpercentage
-FROM (SELECT location,date,total_cases,total_deaths,CAST(total_deaths As float) as total_deathsf,CAST(total_cases As float) as total_casesf
-              From coviddeaths_csv)
-WHERE location like '%India%'
-WHERE continent is not NULL
-order by 1,2
-
--- looking at total cases vs population
--- what percent of population got covid
-SELECT location,date,total_cases,population,(total_cases*1.0/population)*100 as populationinfectedpercent
---used *1.0 in equation to convert total cases to float from integer
-FROM coviddeaths_csv
---WHERE location like '%india%'
-WHERE continent is not NULL
-order by 1,2
-
--- looking at the country with highest infection rate
-SELECT location,population,max(cast(total_cases as INT)) as maximumcasescount,max((total_cases*1.0/population))*100 as populationinfectedpercent
-FROM coviddeaths_csv
---WHERE location like '%states%'
-WHERE continent is not NULL
-group by location, population
-order by populationinfectedpercent DESC
-
--- looking at the countries with highest death count
-
-SELECT location, max(cast(total_deaths as INT)) as maxdeaths
-from coviddeaths_csv
-WHERE continent is not NULL
-group by location
-order by maxdeaths DESC
-
-
--- max death count per continent
-SELECT continent, max(cast(total_deaths as INT)) as maxdeaths
-FROM coviddeaths_csv
-WHERE continent is not NULL
-group by continent
-order by maxdeaths DESC
-
--- checking the data credibility
-SELECT location, max(cast(total_deaths as INT)) as maxdeaths
-from coviddeaths_csv
-WHERE continent is NULL
-group by location
-order by maxdeaths DESC
--- changing continent with the location and seeing the difference
-
---showing continents with the highest death counts
-SELECT continent, max(cast(total_deaths as INT)) as maxdeaths
-FROM coviddeaths_csv
-WHERE continent is not NULL
-group by continent
-order by maxdeaths DESC
-
--- total number of cases in the world as per the dates
-
-SELECT sum(new_cases),sum(new_deaths),sum(new_deaths)*1.0/sum(new_cases) * 100 AS deathpercentage
--- convert sum of new deaths to float from int
-FROM coviddeaths_csv
-WHERE continent is not NULL
-
-order by 1,2
-
--- Geting information direct from world data in location
-
-SELECT location,date,new_cases,new_deaths, (new_deaths)*1.0/new_cases *100 As deathpercentage
-from coviddeaths_csv
-WHERE location like '%World%'
-
--- join coviddeaths and covidvaccinations TABLE
-SELECT *
-FROM coviddeaths_csv AS dea
-    JOIN covidvaccinations_csv AS vac
-    on dea.location = vac.location
-	and dea.date = vac.date
-
--- doing analysis on the joint tables
--- looking at total population vs vaccination
-SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
-FROM coviddeaths_csv AS dea
-    JOIN covidvaccinations_csv AS vac
-    on dea.location = vac.location
-	and dea.date = vac.date
-WHERE dea.continent is not NULL
-order by 2,3	
--- counting new vaccination each day per location
-SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevacinated_date
-FROM coviddeaths_csv AS dea
-    JOIN covidvaccinations_csv AS vac
-    on dea.location = vac.location
-	and dea.date = vac.date
-WHERE dea.continent is not NULL
-order by 2,3
-
--- using cte for calculating population and vaccination percentage
-
-WITH popvsvac (continent,location,date,population,new_vaccinations,peoplevacinated_date)
-AS
-(SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevacinated_date
-FROM coviddeaths_csv AS dea
-    JOIN covidvaccinations_csv AS vac
-    on dea.location = vac.location
-	and dea.date = vac.date
-WHERE dea.continent is not NULL
-)
-SELECT *, (peoplevacinated_date*1.0/population)*100
-from popvsvac
---where location like '%India%'
-
--- people vaccinated percentage by temp table 
-
-DROP TABLE if EXISTS populationvaccinatedpercent;
-CREATE TABLE populationvaccinatedpercent (
-  continent nvarchar(255),
-  location nvarchar(255),
-  date datetime,
-  population NUMERIC,
-  new_vaccinations NUMERIC,
-  peoplevaccinated_date NUMERIC
-);
-INSERT INTO populationvaccinatedpercent 
-SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevaccinated_dateinated_date
-FROM coviddeaths_csv AS dea
-    JOIN covidvaccinations_csv AS vac
-    on dea.location = vac.location
-	and dea.date = vac.date
-WHERE dea.continent is not NULL;
-
-SELECT *, (peoplevaccinated_date*1.0/population)*100
-from populationvaccinatedpercent;
-
--- same code as above
-DROP TABLE if EXISTS populationvaccinatedpercent;
-
-CREATE TABLE populationvaccinatedpercent (
-    continent nvarchar(255),
-    location nvarchar(255),
-    date datetime,
-    population NUMERIC,
-    new_vaccinations NUMERIC,
-    peoplevaccinated_date NUMERIC
-);
-
-INSERT INTO populationvaccinatedpercent 
-SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
-    sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevaccinated_date
-FROM coviddeaths_csv AS dea
-JOIN covidvaccinations_csv AS vac
-    ON dea.location = vac.location
-    AND dea.date = vac.date
-WHERE dea.continent IS NOT NULL;
-
-SELECT continent, location, xyzdate, population, new_vaccinations, peoplevaccinated_date,
-    (peoplevaccinated_date*1.0/population)*100 AS vaccinated_percent
-FROM populationvaccinatedpercent;
-
-
--- creating view for visualization
-
-CREATE VIEW sumvaccinationeachday AS
-SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevacinated_date
-FROM coviddeaths_csv AS dea
-    JOIN covidvaccinations_csv AS vac
-    on dea.location = vac.location
-	and dea.date = vac.date
-WHERE dea.continent is not NULL;
---ORDER by 2,3 we can not use order by clause in create VIEW
-
--- for fun 
-WITH vacpercent (continent,location,date,population,new_deaths,new_vaccinations,peoplevacinated_date)
-AS
-(SELECT dea.continent, dea.location, dea.date, dea.population, dea.new_deaths, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevacinated_date
-FROM coviddeaths_csv AS dea
-    JOIN covidvaccinations_csv AS vac
-    on dea.location = vac.location
-	and dea.date = vac.date
-WHERE dea.continent is not NULL AND dea.location like '%India%'
-)
-SELECT *,(peoplevacinated_date*1.0 / population)*100
-from vacpercent
-
-
-
-
-
-
-
-
-
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="C:/Users/parth/Desktop/bicycle data/portfolioproject/portfolioproject.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="125"/><column_width id="3" width="10845"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><current_table name="4,21:mainsumvaccinationeachday"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="coviddeaths_csv" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort><column index="3" mode="0"/></sort><column_widths><column index="1" value="87"/><column index="2" value="92"/><column index="3" value="95"/><column index="4" value="93"/><column index="5" value="103"/><column index="6" value="108"/><column index="7" value="104"/><column index="8" value="201"/><column index="9" value="119"/><column index="10" value="115"/><column index="11" value="212"/><column index="12" value="216"/><column index="13" value="212"/><column index="14" value="300"/><column index="15" value="227"/><column index="16" value="223"/><column index="17" value="300"/><column index="18" value="166"/><column index="19" value="116"/><column index="20" value="224"/><column index="21" value="133"/><column index="22" value="241"/><column index="23" value="213"/><column index="24" value="300"/><column index="25" value="230"/><column index="26" value="300"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="covidvaccinations_csv" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="87"/><column index="2" value="92"/><column index="3" value="95"/><column index="4" value="93"/><column index="5" value="103"/><column index="6" value="99"/><column index="7" value="234"/><column index="8" value="230"/><column index="9" value="196"/><column index="10" value="300"/><column index="11" value="123"/><column index="12" value="140"/><column index="14" value="168"/><column index="15" value="171"/><column index="16" value="220"/><column index="17" value="136"/><column index="18" value="164"/><column index="19" value="261"/><column index="20" value="290"/><column index="21" value="293"/><column index="22" value="300"/><column index="23" value="258"/><column index="24" value="300"/><column index="25" value="300"/><column index="26" value="300"/><column index="27" value="158"/><column index="28" value="177"/><column index="29" value="115"/><column index="30" value="140"/><column index="31" value="140"/><column index="32" value="145"/><column index="33" value="157"/><column index="34" value="206"/><column index="35" value="187"/><column index="36" value="151"/><column index="37" value="134"/><column index="38" value="208"/><column index="39" value="262"/><column index="40" value="145"/><column index="41" value="250"/><column index="42" value="103"/><column index="43" value="300"/><column index="44" value="261"/><column index="45" value="156"/><column index="46" value="300"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="populationvaccinatedpercent" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="92"/><column index="2" value="95"/><column index="3" value="91"/><column index="4" value="103"/><column index="5" value="164"/><column index="6" value="209"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="sumvaccinationeachday" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="92"/><column index="2" value="79"/><column index="3" value="75"/><column index="4" value="103"/><column index="5" value="164"/><column index="6" value="200"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1">SELECT location,date,total_cases,new_cases,total_deaths,population
+
+FROM coviddeaths_csv
+
+WHERE continent is not NULL
+
+order by 1,2;
+
+-- Total cases vs total deaths
+
+SELECT location,date,total_cases,total_deaths,(total_deathsf/total_casesf)*100 AS deathpercentage
+
+FROM (SELECT location,date,total_cases,total_deaths,CAST(total_deaths As float) as total_deathsf,CAST(total_cases As float) as total_casesf
+
+              From coviddeaths_csv)
+
+WHERE location like '%India%'
+
+WHERE continent is not NULL
+
+order by 1,2
+
+
+
+-- looking at total cases vs population
+
+-- what percent of population got covid
+
+SELECT location,date,total_cases,population,(total_cases*1.0/population)*100 as populationinfectedpercent
+
+--used *1.0 in equation to convert total cases to float from integer
+
+FROM coviddeaths_csv
+
+--WHERE location like '%india%'
+
+WHERE continent is not NULL
+
+order by 1,2
+
+
+
+-- looking at the country with highest infection rate
+
+SELECT location,population,max(cast(total_cases as INT)) as maximumcasescount,max((total_cases*1.0/population))*100 as populationinfectedpercent
+
+FROM coviddeaths_csv
+
+--WHERE location like '%states%'
+
+WHERE continent is not NULL
+
+group by location, population
+
+order by populationinfectedpercent DESC
+
+
+
+-- looking at the countries with highest death count
+
+
+
+SELECT location, max(cast(total_deaths as INT)) as maxdeaths
+
+from coviddeaths_csv
+
+WHERE continent is not NULL
+
+group by location
+
+order by maxdeaths DESC
+
+
+
+
+
+-- max death count per continent
+
+SELECT continent, max(cast(total_deaths as INT)) as maxdeaths
+
+FROM coviddeaths_csv
+
+WHERE continent is not NULL
+
+group by continent
+
+order by maxdeaths DESC
+
+
+
+-- checking the data credibility
+
+SELECT location, max(cast(total_deaths as INT)) as maxdeaths
+
+from coviddeaths_csv
+
+WHERE continent is NULL
+
+group by location
+
+order by maxdeaths DESC
+
+-- changing continent with the location and seeing the difference
+
+
+
+--showing continents with the highest death counts
+
+SELECT continent, max(cast(total_deaths as INT)) as maxdeaths
+
+FROM coviddeaths_csv
+
+WHERE continent is not NULL
+
+group by continent
+
+order by maxdeaths DESC
+
+
+
+-- total number of cases in the world as per the dates
+
+
+
+SELECT sum(new_cases),sum(new_deaths),sum(new_deaths)*1.0/sum(new_cases) * 100 AS deathpercentage
+
+-- convert sum of new deaths to float from int
+
+FROM coviddeaths_csv
+
+WHERE continent is not NULL
+
+
+
+order by 1,2
+
+
+
+-- Geting information direct from world data in location
+
+
+
+SELECT location,date,new_cases,new_deaths, (new_deaths)*1.0/new_cases *100 As deathpercentage
+
+from coviddeaths_csv
+
+WHERE location like '%World%'
+
+
+
+-- join coviddeaths and covidvaccinations TABLE
+
+SELECT *
+
+FROM coviddeaths_csv AS dea
+
+    JOIN covidvaccinations_csv AS vac
+
+    on dea.location = vac.location
+
+	and dea.date = vac.date
+
+
+
+-- doing analysis on the joint tables
+
+-- looking at total population vs vaccination
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+
+FROM coviddeaths_csv AS dea
+
+    JOIN covidvaccinations_csv AS vac
+
+    on dea.location = vac.location
+
+	and dea.date = vac.date
+
+WHERE dea.continent is not NULL
+
+order by 2,3	
+
+-- counting new vaccination each day per location
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevacinated_date
+
+FROM coviddeaths_csv AS dea
+
+    JOIN covidvaccinations_csv AS vac
+
+    on dea.location = vac.location
+
+	and dea.date = vac.date
+
+WHERE dea.continent is not NULL
+
+order by 2,3
+
+
+
+-- using cte for calculating population and vaccination percentage
+
+
+
+WITH popvsvac (continent,location,date,population,new_vaccinations,peoplevacinated_date)
+
+AS
+
+(SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevacinated_date
+
+FROM coviddeaths_csv AS dea
+
+    JOIN covidvaccinations_csv AS vac
+
+    on dea.location = vac.location
+
+	and dea.date = vac.date
+
+WHERE dea.continent is not NULL
+
+)
+
+SELECT *, (peoplevacinated_date*1.0/population)*100
+
+from popvsvac
+
+--where location like '%India%'
+
+
+
+-- people vaccinated percentage by temp table 
+
+
+
+DROP TABLE if EXISTS populationvaccinatedpercent;
+
+CREATE TABLE populationvaccinatedpercent (
+
+  continent nvarchar(255),
+
+  location nvarchar(255),
+
+  date datetime,
+
+  population NUMERIC,
+
+  new_vaccinations NUMERIC,
+
+  peoplevaccinated_date NUMERIC
+
+);
+
+INSERT INTO populationvaccinatedpercent 
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevaccinated_dateinated_date
+
+FROM coviddeaths_csv AS dea
+
+    JOIN covidvaccinations_csv AS vac
+
+    on dea.location = vac.location
+
+	and dea.date = vac.date
+
+WHERE dea.continent is not NULL;
+
+
+
+SELECT *, (peoplevaccinated_date*1.0/population)*100
+
+from populationvaccinatedpercent;
+
+
+
+-- same code as above
+
+DROP TABLE if EXISTS populationvaccinatedpercent;
+
+
+
+CREATE TABLE populationvaccinatedpercent (
+
+    continent nvarchar(255),
+
+    location nvarchar(255),
+
+    date datetime,
+
+    population NUMERIC,
+
+    new_vaccinations NUMERIC,
+
+    peoplevaccinated_date NUMERIC
+
+);
+
+
+
+INSERT INTO populationvaccinatedpercent 
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
+
+    sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevaccinated_date
+
+FROM coviddeaths_csv AS dea
+
+JOIN covidvaccinations_csv AS vac
+
+    ON dea.location = vac.location
+
+    AND dea.date = vac.date
+
+WHERE dea.continent IS NOT NULL;
+
+
+
+SELECT continent, location, xyzdate, population, new_vaccinations, peoplevaccinated_date,
+
+    (peoplevaccinated_date*1.0/population)*100 AS vaccinated_percent
+
+FROM populationvaccinatedpercent;
+
+
+
+
+
+-- creating view for visualization
+
+
+
+CREATE VIEW sumvaccinationeachday AS
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevacinated_date
+
+FROM coviddeaths_csv AS dea
+
+    JOIN covidvaccinations_csv AS vac
+
+    on dea.location = vac.location
+
+	and dea.date = vac.date
+
+WHERE dea.continent is not NULL;
+
+--ORDER by 2,3 we can not use order by clause in create VIEW
+
+
+
+-- for fun 
+
+WITH vacpercent (continent,location,date,population,new_deaths,new_vaccinations,peoplevacinated_date)
+
+AS
+
+(SELECT dea.continent, dea.location, dea.date, dea.population, dea.new_deaths, vac.new_vaccinations, sum(cast(vac.new_vaccinations as INT)) OVER (PARTITION by dea.location ORDER by dea.location, dea.date) as peoplevacinated_date
+
+FROM coviddeaths_csv AS dea
+
+    JOIN covidvaccinations_csv AS vac
+
+    on dea.location = vac.location
+
+	and dea.date = vac.date
+
+WHERE dea.continent is not NULL AND dea.location like '%India%'
+
+)
+
+SELECT *,(peoplevacinated_date*1.0 / population)*100
+
+from vacpercent
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </sql><current_tab id="0"/></tab_sql></sqlb_project>
